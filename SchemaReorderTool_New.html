@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Schema Workstation</title>
+    <style>
+        /* Base Variables & Reset */
+        :root {
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-300: #cbd5e1;
+            --slate-400: #94a3b8;
+            --slate-500: #64748b;
+            --slate-700: #334155;
+            --slate-800: #1e293b;
+            --blue-50: #eff6ff;
+            --blue-100: #dbeafe;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --green-50: #f0fdf4;
+            --green-600: #16a34a;
+            --green-700: #15803d;
+            --font-sans: system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--slate-50);
+            color: var(--slate-800);
+            line-height: 1.5;
+            padding: 1.5rem;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--slate-100);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--slate-300);
+            border-radius: 4px;
+        }
+
+        .container {
+            max-width: 72rem;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--slate-200);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: var(--blue-600);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header p {
+            color: var(--blue-100);
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .content {
+            padding: 1.5rem 2rem;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--slate-200);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* DB Import Input Elements */
+        .prefix-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--slate-300);
+            border-radius: 0.5rem;
+            outline: none;
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        .prefix-input:focus {
+            border-color: var(--blue-500);
+            box-shadow: 0 0 0 2px var(--blue-100);
+        }
+
+        .sql-box {
+            background-color: var(--slate-800);
+            color: var(--green-200);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .json-textarea {
+            width: 100%;
+            height: 150px;
+            padding: 1rem;
+            border: 1px solid var(--slate-300);
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            resize: vertical;
+            outline: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .json-textarea:focus {
+            border-color: var(--blue-500);
+            box-shadow: 0 0 0 2px var(--blue-100);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-blue { background-color: var(--blue-600); color: white; }
+        .btn-blue:hover { background-color: #1d4ed8; }
+        .btn-green { background-color: var(--green-600); color: white; }
+        .btn-green:hover { background-color: var(--green-700); }
+        .btn-outline { background-color: white; border: 1px solid var(--slate-300); color: var(--slate-700); }
+
+        /* Reorder List Container */
+        .list-container {
+            background: var(--slate-50);
+            border: 1px solid var(--slate-200);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            max-height: 350px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .draggable-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border: 1px solid var(--slate-200);
+            border-radius: 0.25rem;
+            cursor: grab;
+        }
+
+        .draggable-item.drag-ghost {
+            opacity: 0.4;
+            background-color: var(--slate-200);
+            border-style: dashed;
+        }
+
+        .drag-handle { color: var(--slate-400); margin-right: 0.75rem; cursor: grab; }
+        .seq-input { width: 44px; text-align: center; padding: 0.25rem; border: 1px solid var(--slate-300); border-radius: 0.25rem; font-weight: 700; color: var(--blue-700); background-color: var(--blue-50); margin-right: 1rem; font-size: 0.875rem; }
+        .item-content { flex: 1; }
+        .item-title { font-weight: 700; font-size: 0.875rem; }
+        .item-schema { font-size: 0.75rem; color: var(--slate-500); background: var(--slate-100); padding: 0.125rem 0.5rem; border-radius: 0.25rem; margin-left: 0.5rem; }
+
+        /* Workstation UI */
+        .workstation-box { background: white; border: 1px solid var(--slate-200); border-radius: 0.5rem; margin-top: 2rem; display: none; overflow: hidden; }
+        .tabs-header { display: flex; background: var(--slate-100); border-bottom: 1px solid var(--slate-300); }
+        .tab-btn { flex: 1; padding: 1rem; font-weight: 600; color: var(--slate-500); cursor: pointer; border: none; background: transparent; border-bottom: 3px solid transparent; outline: none; }
+        .tab-btn.active { background: white; color: var(--blue-600); border-bottom-color: var(--blue-600); }
+        
+        .preview-container { width: 100%; height: 500px; background: white; overflow-y: auto; padding: 20px; display: none; }
+        .preview-container.active { display: block; }
+
+        /* Native Render Scoped CSS (Matches SQLDataEditDocer) */
+        .preview-container { font-family: Verdana, Arial, sans-serif; font-size: 11px; color: #000; }
+        .preview-container table { border: solid 1px #CCCCCC; border-collapse: collapse; width: 100%; table-layout: auto; }
+        .preview-container td, .preview-container th { padding: 4px; border: solid 1px #DDDDDD; white-space: nowrap; vertical-align: middle; }
+        .preview-container .remarks-col { white-space: normal; width: 100%; }
+        .preview-container h1 { font-size: 14px; margin: 10px 0px 5px 0px; color: #1e293b; font-weight: bold; }
+        .preview-container h2 { font-size: 13px; margin: 5px 0px 5px 0px; color: #334155; font-weight: bold; }
+        .preview-container tr.hdrow td, .preview-container thead tr td { font-weight: bold; background-color: #F1F1F1; }
+        .preview-container .schema-block { margin-bottom: 25px; }
+        .preview-container .action-btn { background: #3b82f6; color: white; border: none; border-radius: 3px; cursor: pointer; padding: 3px 8px; font-weight: bold; margin-right: 4px; }
+        .preview-container .action-btn.del { background: #ef4444; }
+        .preview-container td[contenteditable="true"] { outline: #cbd5e1; outline-offset: -2px; min-width: 60px; }
+        .preview-container td[contenteditable="true"]:focus { outline: 2px solid #3b82f6; background-color: #f8fafc; }
+
+        @media print {
+            @page { size: A4 portrait; margin: 10mm; }
+            body { padding: 0; }
+            h1, h2, h3 { page-break-after: avoid; break-after: avoid; }
+            tr { page-break-inside: avoid; break-inside: avoid; }
+            thead { display: table-header-group; page-break-after: avoid; break-after: avoid; }
+            table.objecttable tbody tr:nth-child(-n+3) { page-break-after: avoid; break-after: avoid; }
+            .action-btn, .action-col { display: none !important; }
+        }
+
+        .loading-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white;
+        }
+        .loading-overlay.active { display: flex; }
+        .spinner {
+            width: 3rem; height: 3rem; border: 4px solid rgba(255, 255, 255, 0.2); border-top-color: var(--blue-500); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+        .mt-8 { margin-top: 2rem; }
+        svg { width: 1.25rem; height: 1.25rem; }
+    </style>
+</head>
+
+<body>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <h2>Processing Data...</h2>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                </svg>
+                Schema Workstation
+            </h1>
+            <p>Generate schemas directly from SQL. Reorder, document, and edit inline before downloading.</p>
+        </div>
+
+        <div class="content">
+            <div id="step-1">
+                <h2 class="section-title">Step 1: Extract & Import Database Schema</h2>
+                
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--slate-700);">1. Enter Table Prefixes (Comma separated, e.g., HRA, HRC)</label>
+                    <input type="text" id="prefixInput" class="prefix-input" placeholder="Leave blank for all tables, or filter like: HRA, HRC" oninput="updateSQL()">
+                </div>
+
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--slate-700);">2. Copy and Run this Query in SSMS</label>
+                    <div class="sql-box">
+                        <button onclick="copySql()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: var(--blue-600); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Copy SQL</button>
+                        <code id="sql-query-code"></code>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--slate-700);">3. Paste the generated JSON result here (Click the link in SSMS, Ctrl+A, Copy, and Paste):</label>
+                    <textarea id="jsonInput" class="json-textarea" placeholder='[{"SchemaName":"dbo", "TableName":"HRA_Attendance"...}]'></textarea>
+                </div>
+                
+                <button onclick="processJsonImport()" class="btn btn-blue">Generate & Load Tables</button>
+            </div>
+
+            <div id="step-2" class="hidden">
+                <h2 class="section-title">Step 2: Reorder Tables</h2>
+                <div class="list-container" id="tableListContainer"></div>
+                <button onclick="triggerProcessing()" class="btn btn-blue mt-8">
+                    Apply Order & Open Workstation
+                </button>
+            </div>
+
+            <div id="step-3" class="workstation-box">
+                <div class="tabs-header">
+                    <button class="tab-btn" id="tab-overview" onclick="switchTab('overview')">Overview Document</button>
+                    <button class="tab-btn active" id="tab-details" onclick="switchTab('details')">Details Document (Interactive)</button>
+                </div>
+                <div id="preview-wrapper">
+                    <div id="frame-overview" class="preview-container"></div>
+                    <div id="frame-details" class="preview-container active"></div>
+                </div>
+                <div style="padding: 1rem; background: var(--slate-50); border-top: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.875rem; color: var(--slate-500);">Review and edit inline before exporting.</span>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="downloadLiveFile('overview')" class="btn btn-outline">Download Overview</button>
+                        <button onclick="downloadLiveFile('details')" class="btn btn-green">Download Details</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let originalOverviewText = "", originalDetailsText = "";
+        let originalOverviewFileName = "Overview_DB.htm", originalDetailsFileName = "Details_DB.htm";
+        let generatedOverviewFileName = "", generatedDetailsFileName = "";
+        let tableData = [], draggedItem = null, currentActiveTab = 'details';
+
+        function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
+        function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
+
+        // Load SQL query on start
+        window.onload = function() {
+            updateSQL();
+        };
+
+        // Dynamic SQL Generation based on Prefixes
+        function updateSQL() {
+            const raw = document.getElementById('prefixInput').value;
+            const prefixes = raw.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            
+            let whereClause = "";
+            if (prefixes.length > 0) {
+                const conditions = prefixes.map(p => `t.name LIKE '${p}%'`).join(' OR ');
+                whereClause = `\nWHERE ${conditions}`;
+            }
+            
+            const baseSQL = `SELECT 
+    s.name AS SchemaName, t.name AS TableName, c.name AS ColumnName,
+    UPPER(typ.name) + CASE WHEN typ.name IN ('varchar', 'nvarchar', 'char', 'nchar') THEN '(' + CASE WHEN c.max_length = -1 THEN 'MAX' ELSE CAST(c.max_length AS VARCHAR) END + ')' WHEN typ.name IN ('decimal', 'numeric') THEN '(' + CAST(c.precision AS VARCHAR) + ',' + CAST(c.scale AS VARCHAR) + ')' ELSE '' END AS DataType,
+    CASE WHEN c.is_nullable = 1 THEN 'Yes' ELSE 'No' END AS AllowNull,
+    ISNULL(dc.definition, '') AS DefaultValue,
+    CASE WHEN pk.column_id IS NOT NULL THEN 'Yes' ELSE '' END AS PK,
+    CASE WHEN fk.parent_column_id IS NOT NULL THEN 'Yes' ELSE '' END AS FK,
+    CASE WHEN uk.column_id IS NOT NULL THEN 'Yes' ELSE '' END AS UK,
+    CASE WHEN c.is_identity = 1 THEN 'Yes' ELSE '' END AS IC
+FROM sys.tables t
+INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
+INNER JOIN sys.columns c ON t.object_id = c.object_id
+INNER JOIN sys.types typ ON c.system_type_id = typ.system_type_id AND c.user_type_id = typ.user_type_id
+LEFT JOIN sys.default_constraints dc ON c.default_object_id = dc.object_id
+LEFT JOIN (SELECT ic.object_id, ic.column_id FROM sys.indexes i INNER JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id WHERE i.is_primary_key = 1) pk ON c.object_id = pk.object_id AND c.column_id = pk.column_id
+LEFT JOIN (SELECT ic.object_id, ic.column_id FROM sys.indexes i INNER JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id WHERE i.is_unique_constraint = 1) uk ON c.object_id = uk.object_id AND c.column_id = uk.column_id
+LEFT JOIN (SELECT DISTINCT parent_object_id, parent_column_id FROM sys.foreign_key_columns) fk ON c.object_id = fk.parent_object_id AND c.column_id = fk.parent_column_id${whereClause}
+ORDER BY s.name, t.name, c.column_id
+FOR JSON AUTO;`;
+            
+            document.getElementById('sql-query-code').textContent = baseSQL;
+        }
+
+        function copySql() {
+            const sql = document.getElementById('sql-query-code').innerText;
+            navigator.clipboard.writeText(sql).then(() => alert('SQL Copied to Clipboard!'));
+        }
+
+        // Parse JSON DB Import
+        function processJsonImport() {
+            const jsonText = document.getElementById('jsonInput').value.trim();
+            if (!jsonText) { alert("Please paste the JSON generated by the SQL query."); return; }
+            
+            showLoading();
+            setTimeout(() => {
+                try {
+                    let cleanJson = jsonText.replace(/^\uFEFF/, '');
+                    const data = JSON.parse(cleanJson);
+                    if (!data || data.length === 0) throw new Error("JSON array is empty.");
+                    
+                    const tables = {};
+                    
+                    // Support both Flat JSON and Nested JSON (FOR JSON AUTO) structures
+                    data.forEach(item => {
+                        if (item.TableName && item.ColumnName) {
+                            const key = item.SchemaName + '.' + item.TableName;
+                            if(!tables[key]) tables[key] = { schema: item.SchemaName, name: item.TableName, columns: [] };
+                            tables[key].columns.push(item);
+                        } 
+                        else if (item.t && Array.isArray(item.t)) {
+                            const sName = item.SchemaName || 'dbo';
+                            item.t.forEach(tObj => {
+                                const tName = tObj.TableName;
+                                const key = sName + '.' + tName;
+                                if(!tables[key]) tables[key] = { schema: sName, name: tName, columns: [] };
+                                
+                                if (tObj.c && Array.isArray(tObj.c)) {
+                                    tObj.c.forEach(cObj => {
+                                        tables[key].columns.push({
+                                            ColumnName: cObj.ColumnName || '', DataType: cObj.DataType || '',
+                                            AllowNull: cObj.AllowNull || '', DefaultValue: cObj.DefaultValue || '',
+                                            PK: cObj.PK || '', FK: cObj.FK || '', UK: cObj.UK || '', IC: cObj.IC || ''
+                                        });
+                                    });
+                                }
+                            });
+                        }
+                    });
+
+                    // Build raw HTML Strings
+                    let ovHtml = '<h1>Overview</h1><table class="objecttable"><tr class="hdrow"><td>Schema</td><td>Table Name</td><td>Columns</td></tr>';
+                    Object.values(tables).forEach(t => {
+                        ovHtml += `<tr><td>${t.schema}</td><td>${t.name}</td><td>${t.columns.length}</td></tr>`;
+                    });
+                    ovHtml += '</table>';
+
+                    let detHtml = '<h1>Details</h1>';
+                    Object.values(tables).forEach((t, i) => {
+                        detHtml += `<div class="schema-block">`;
+                        detHtml += `<h1>${i+1}. ${t.schema}.${t.name}</h1>`;
+                        // Inject abbreviated headers from the start
+                        detHtml += `<table class="objecttable"><tr class="hdrow"><td>Column Name</td><td>Data Type</td><td>Allow<br/>Null</td><td>Default?</td><td>PK</td><td>FK</td><td>UK</td><td>IC</td></tr>`;
+                        t.columns.forEach(c => {
+                            let defVal = (c.DefaultValue||'').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            detHtml += `<tr><td>${c.ColumnName||''}</td><td>${c.DataType||''}</td><td>${c.AllowNull||''}</td><td>${defVal}</td><td>${c.PK||''}</td><td>${c.FK||''}</td><td>${c.UK||''}</td><td>${c.IC||''}</td></tr>`;
+                        });
+                        detHtml += `</table></div>`;
+                    });
+
+                    originalOverviewText = `<!DOCTYPE html><html><body>${ovHtml}</body></html>`;
+                    originalDetailsText = `<!DOCTYPE html><html><body>${detHtml}</body></html>`;
+                    
+                    executeLoadTablesCore();
+                } catch (e) {
+                    console.error(e);
+                    alert("JSON Parsing Error: " + e.message + "\n\nMake sure to click the blue JSON hyperlink in SSMS results grid and press Ctrl+A to copy the complete text.");
+                    hideLoading();
+                }
+            }, 50);
+        }
+
+        // --- CORE LOGIC FOR POPULATING STEP 2 ---
+        function executeLoadTablesCore() {
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(originalOverviewText, 'text/html');
+                let table = doc.querySelector('table.objecttable') || doc.querySelector('table');
+
+                if (!table) { alert("No tables found."); hideLoading(); return; }
+
+                let schemaIdx = 0;
+                let tableIdx = 1;
+                const tbody = table.querySelector('tbody') || table;
+                const overviewHdrow = table.querySelector('tr.hdrow') || Array.from(tbody.children).find(c => c.tagName === 'TR');
+
+                if (overviewHdrow) {
+                    Array.from(overviewHdrow.cells).forEach((cell, idx) => {
+                        const txt = cell.textContent.trim().toLowerCase();
+                        if (txt === 'schema') schemaIdx = idx;
+                        else if (txt === 'table' || txt === 'table name') tableIdx = idx;
+                    });
+                }
+
+                tableData = [];
+                Array.from(table.querySelectorAll('tr')).filter(tr => tr.closest('table') === table && !tr.classList.contains('hdrow') && !tr.querySelector('th') && tr !== overviewHdrow).forEach((row, idx) => {
+                    if (row.cells.length > Math.max(schemaIdx, tableIdx)) {
+                        tableData.push({
+                            originalIndex: idx,
+                            schemaName: row.cells[schemaIdx].textContent.trim(),
+                            tableName: row.cells[tableIdx].textContent.trim()
+                        });
+                    }
+                });
+
+                const container = document.getElementById('tableListContainer');
+                container.innerHTML = '';
+                const frag = document.createDocumentFragment();
+
+                tableData.forEach((data, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'draggable-item';
+                    div.setAttribute('data-index', data.originalIndex);
+                    div.setAttribute('draggable', 'true');
+                    div.innerHTML = `
+                        <div class="drag-handle">☰</div>
+                        <input type="number" class="seq-input" value="${index + 1}" min="1" max="${tableData.length}">
+                        <div class="item-content">
+                            <span class="item-title">${data.tableName}</span>
+                            <span class="item-schema">${data.schemaName}</span>
+                        </div>
+                    `;
+                    div.querySelector('.seq-input').addEventListener('change', e => handleManualSequenceChange(e, div, tableData.length));
+                    frag.appendChild(div);
+                });
+
+                container.appendChild(frag);
+                setupDragAndDrop();
+
+                document.getElementById('step-1').classList.add('hidden');
+                document.getElementById('step-2').classList.remove('hidden');
+                hideLoading();
+                document.getElementById('step-2').scrollIntoView({ behavior: 'smooth' });
+            } catch (err) {
+                console.error(err);
+                alert("Error processing JSON data.");
+                hideLoading();
+            }
+        }
+
+        function handleManualSequenceChange(e, itemDOM, maxItems) {
+            let newVal = parseInt(e.target.value, 10);
+            if (isNaN(newVal) || newVal < 1) newVal = 1;
+            if (newVal > maxItems) newVal = maxItems;
+
+            const container = document.getElementById('tableListContainer');
+            const items = Array.from(container.querySelectorAll('.draggable-item'));
+            const currentIndex = items.indexOf(itemDOM);
+            const targetIndex = newVal - 1;
+
+            if (currentIndex !== targetIndex) {
+                container.removeChild(itemDOM);
+                const freshItems = Array.from(container.querySelectorAll('.draggable-item'));
+                if (targetIndex >= freshItems.length) container.appendChild(itemDOM);
+                else container.insertBefore(itemDOM, freshItems[targetIndex]);
+            }
+            updateSequenceNumbers();
+        }
+
+        function setupDragAndDrop() {
+            const container = document.getElementById('tableListContainer');
+            container.addEventListener('dragstart', e => {
+                if (e.target.tagName === 'INPUT') return e.preventDefault();
+                draggedItem = e.target.closest('.draggable-item');
+                setTimeout(() => draggedItem.classList.add('drag-ghost'), 0);
+            });
+            container.addEventListener('dragend', () => {
+                draggedItem.classList.remove('drag-ghost');
+                draggedItem = null;
+                updateSequenceNumbers();
+            });
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                if (!draggedItem) return;
+                const afterEl = [...container.querySelectorAll('.draggable-item:not(.drag-ghost)')].reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = e.clientY - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+                    return closest;
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+
+                if (afterEl == null) container.appendChild(draggedItem);
+                else container.insertBefore(draggedItem, afterEl);
+            });
+        }
+
+        function updateSequenceNumbers() {
+            document.querySelectorAll('.seq-input').forEach((inp, idx) => inp.value = idx + 1);
+        }
+
+        function triggerProcessing() {
+            showLoading();
+            setTimeout(() => {
+                try { processAndRearrange(); }
+                catch (e) { console.error(e); alert("Processing Error."); }
+                finally { hideLoading(); }
+            }, 50);
+        }
+
+        function processAndRearrange() {
+            const parser = new DOMParser();
+            const ovDoc = parser.parseFromString(originalOverviewText, 'text/html');
+            const detDoc = parser.parseFromString(originalDetailsText, 'text/html');
+
+            const newTableData = Array.from(document.querySelectorAll('.draggable-item')).map((item, idx) => {
+                const data = tableData.find(d => d.originalIndex === parseInt(item.getAttribute('data-index')));
+                return { ...data, newSequence: idx + 1 };
+            });
+
+            // 1. Process Overview
+            let ovTable = ovDoc.querySelector('table.objecttable') || ovDoc.querySelector('table');
+            if (ovTable) {
+                let tbody = ovTable.querySelector('tbody') || ovTable;
+                let hdrow = ovTable.querySelector('tr.hdrow') || Array.from(tbody.children).find(c => c.tagName === 'TR');
+                
+                if (hdrow) {
+                    hdrow.classList.add('hdrow');
+                    const td = ovDoc.createElement('td'); 
+                    td.textContent = 'Seq';
+                    hdrow.insertBefore(td, hdrow.firstChild);
+                    
+                    let thead = ovTable.querySelector('thead') || ovDoc.createElement('thead');
+                    thead.appendChild(hdrow);
+                    if (!ovTable.querySelector('thead')) ovTable.insertBefore(thead, ovTable.firstChild);
+                }
+
+                const rows = Array.from(ovTable.querySelectorAll('tr')).filter(tr => tr.closest('table') === ovTable && tr !== hdrow);
+                newTableData.forEach(d => {
+                    const r = rows[d.originalIndex];
+                    if (r) {
+                        const td = ovDoc.createElement('td'); 
+                        td.textContent = d.newSequence;
+                        r.insertBefore(td, r.firstChild);
+                        tbody.appendChild(r);
+                    }
+                });
+            }
+
+            // 2. Process Details
+            let detTables = detDoc.querySelectorAll('table.objecttable');
+            if (!detTables.length) detTables = detDoc.querySelectorAll('table');
+
+            detTables.forEach(table => {
+                table.classList.add('objecttable');
+                let tbody = table.querySelector('tbody') || table;
+                let hdrow = table.querySelector('tr.hdrow') || Array.from(tbody.children).find(c => c.tagName === 'TR');
+                if (!hdrow) return;
+                hdrow.classList.add('hdrow');
+
+                let rows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.closest('table') === table && tr !== hdrow);
+                
+                // Rows left in original un-sorted structure
+                rows.forEach(r => tbody.appendChild(r));
+
+                const rt = detDoc.createElement('td'); rt.textContent = 'Remarks'; rt.className = 'remarks-col'; hdrow.appendChild(rt);
+                const at = detDoc.createElement('td'); at.textContent = 'Action'; at.className = 'action-col'; hdrow.appendChild(at);
+
+                let thead = table.querySelector('thead') || detDoc.createElement('thead');
+                thead.appendChild(hdrow);
+                if (!table.querySelector('thead')) table.insertBefore(thead, table.firstChild);
+
+                rows.forEach(r => {
+                    const rt = detDoc.createElement('td'); rt.contentEditable = "true"; rt.className = 'remarks-col'; r.appendChild(rt);
+                    const at = detDoc.createElement('td'); at.innerHTML = '<button class="action-btn" onclick="window.insertRowAfter(this)">+</button>'; at.className = 'action-col'; r.appendChild(at);
+                });
+            });
+
+            // Group and Reorder Details & Calculate Columns
+            const blocks = [];
+            Array.from(detDoc.querySelectorAll('h1')).forEach(h1 => {
+                const name = (h1.textContent.split('.')[1] || h1.textContent).trim();
+                const nodes = [h1];
+                let curr = h1.nextSibling;
+                while (curr && curr.tagName !== 'H1') { nodes.push(curr); curr = curr.nextSibling; }
+                blocks.push({ name, nodes, parent: h1.parentNode, h1 });
+            });
+
+            blocks.sort((a, b) => {
+                const ia = newTableData.findIndex(td => td.tableName === a.name);
+                const ib = newTableData.findIndex(td => td.tableName === b.name);
+                return (ia > -1 ? ia : 999) - (ib > -1 ? ib : 999);
+            });
+
+            blocks.forEach(b => {
+                const match = newTableData.find(td => td.tableName === b.name);
+                
+                let colCount = 0;
+                const tbl = b.nodes.find(n => n.tagName === 'TABLE');
+                if (tbl) {
+                    const hdr = tbl.querySelector('tr.hdrow');
+                    colCount = Array.from(tbl.querySelectorAll('tr')).filter(tr => tr.closest('table') === tbl && tr !== hdr && !tr.closest('thead')).length;
+                }
+
+                if (match) b.h1.textContent = `${match.newSequence}. ${b.h1.textContent} (${colCount} Columns)`;
+                else b.h1.textContent = `${b.h1.textContent} (${colCount} Columns)`;
+
+                const w = detDoc.createElement('div'); w.className = 'schema-block';
+                b.nodes.forEach(n => w.appendChild(n));
+                b.parent.appendChild(w);
+            });
+
+            generatedOverviewFileName = generateDynamicFilename(originalOverviewFileName);
+            generatedDetailsFileName = generateDynamicFilename(originalDetailsFileName);
+
+            document.getElementById('frame-overview').innerHTML = ovDoc.body.innerHTML;
+            document.getElementById('frame-details').innerHTML = detDoc.body.innerHTML;
+
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').style.display = 'block';
+            switchTab('details');
+            document.getElementById('step-3').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function switchTab(tab) {
+            currentActiveTab = tab;
+            document.getElementById('tab-overview').classList.toggle('active', tab === 'overview');
+            document.getElementById('tab-details').classList.toggle('active', tab === 'details');
+            document.getElementById('frame-overview').classList.toggle('active', tab === 'overview');
+            document.getElementById('frame-details').classList.toggle('active', tab === 'details');
+        }
+
+        window.insertRowAfter = function (btn) {
+            const tr = btn.closest('tr');
+            const table = tr.closest('table');
+            const newTr = document.createElement('tr');
+            const cols = (table.querySelector('tr.hdrow') || table.querySelector('thead tr')).children.length;
+
+            for (let i = 0; i < cols; i++) {
+                const td = document.createElement('td');
+                if (i === cols - 1) {
+                    td.innerHTML = '<button class="action-btn" onclick="window.insertRowAfter(this)">+</button> <button class="action-btn del" onclick="window.removeRow(this)">-</button>';
+                    td.className = 'action-col';
+                } else {
+                    td.contentEditable = 'true';
+                    if (i === cols - 2) td.className = 'remarks-col';
+                }
+                newTr.appendChild(td);
+            }
+            tr.insertAdjacentElement('afterend', newTr);
+            updateTableInfo(table);
+        };
+
+        window.removeRow = function (btn) {
+            const table = btn.closest('table');
+            btn.closest('tr').remove();
+            updateTableInfo(table);
+        };
+
+        function updateTableInfo(table) {
+            const hdrow = table.querySelector('tr.hdrow');
+            const rows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.closest('table') === table && tr !== hdrow && !tr.closest('thead'));
+            const count = rows.length;
+            const block = table.closest('.schema-block');
+            if (block) {
+                const h1 = block.querySelector('h1');
+                if (h1) h1.textContent = h1.textContent.replace(/\(\d+ Columns\)/, '(' + count + ' Columns)');
+            }
+        }
+
+        function downloadLiveFile(tab) {
+            const container = document.getElementById('frame-' + tab);
+            const filename = tab === 'overview' ? generatedOverviewFileName : generatedDetailsFileName;
+
+            if (!container || !container.innerHTML.trim()) {
+                alert("Error: Content not loaded yet.");
+                return;
+            }
+
+            const css = "body{font-family:Verdana,Arial,sans-serif;font-size:11px;padding:15px;background:white;color:#000;} table{border:solid 1px #CCC;border-collapse:collapse;width:100%;margin-bottom:15px;table-layout:auto;} td,th{padding:5px;border:solid 1px #DDD;text-align:left;white-space:nowrap;vertical-align:middle;} h1{font-size:15px;margin:15px 0 8px 0;color:#1e293b;font-weight:bold;border-bottom:1px solid #eee;padding-bottom:4px;} h2{font-size:13px;margin:10px 0 5px 0;color:#334155;font-weight:bold;} tr.hdrow td,thead tr td{font-weight:bold;background-color:#F1F1F1;} .schema-block{margin-bottom:30px;} .remarks-col{white-space:normal;width:100%;} @media print{ @page{size:A4 portrait;margin:10mm;} body{padding:0;} h1,h2{page-break-after:avoid;} tr{page-break-inside:avoid;} thead{display:table-header-group;} .action-btn, .action-col{display:none!important;} } .action-btn{background:#3b82f6;color:white;border:none;border-radius:3px;cursor:pointer;padding:4px 8px;font-weight:bold;margin-right:4px;} .action-btn.del{background:#ef4444;} td[contenteditable='true']{outline:#cbd5e1;outline-offset:-2px;} td[contenteditable='true']:focus{outline:2px solid #3b82f6;background-color:#fff;}";
+
+            const js = "window.insertRowAfter=function(b){const t=b.closest('tr'),tb=t.closest('table'),nr=document.createElement('tr'),hd=tb.querySelector('tr.hdrow')||tb.querySelector('thead tr'),c=hd?hd.children.length:t.children.length;for(let i=0;i<c;i++){const d=document.createElement('td');if(i===c-1){d.innerHTML='<button class=\"action-btn\" onclick=\"window.insertRowAfter(this)\">+</button> <button class=\"action-btn del\" onclick=\"window.removeRow(this)\">-</button>';d.className='action-col';}else{d.contentEditable='true';if(i===c-2)d.className='remarks-col';}nr.appendChild(d);}t.insertAdjacentElement('afterend',nr);upd(tb);};window.removeRow=function(b){const tb=b.closest('table');b.closest('tr').remove();upd(tb);};function upd(tb){const h=tb.querySelector('tr.hdrow');const rs=Array.from(tb.querySelectorAll('tr')).filter(r=>r.closest('table')===tb&&r!==h&&!r.closest('thead'));const blk=tb.closest('.schema-block');if(blk){const h1=blk.querySelector('h1');if(h1){h1.textContent=h1.textContent.replace(/\\(\\d+ Columns\\)/,'('+rs.length+' Columns)');}}}";
+
+            const scriptTag = tab === 'details' ? '\n<scr' + 'ipt>\n' + js + '\n</scr' + 'ipt>' : '';
+            const html = '\uFEFF<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>' + tab + ' Document</title>\n<style>\n' + css + '\n</style>\n</head>\n<body>\n' + container.innerHTML + scriptTag + '\n</body>\n</html>';
+
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function generateDynamicFilename(orig) {
+            const d = new Date(), dt = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}${String(d.getSeconds()).padStart(2, '0')}`;
+            const idx = orig.lastIndexOf('.');
+            return idx !== -1 ? `${orig.substring(0, idx)}_reordered_${dt}${orig.substring(idx)}` : `${orig}_reordered_${dt}.htm`;
+        }
+    </script>
+</body>
+
+</html>
